@@ -13,16 +13,16 @@ pub fn get_modules() -> Vec<StyledModule> {
 
     vec![
         Some(StyledModule::new(
-            Module::Time("%H:%M:%S"),
-            Some(Icon::Time),
+            Module::SessionName,
+            Some(Icon::Tmux),
             Style {
-                fg: Color::Magenta,
+                fg: Color::Blue,
                 bg: Color::Reset,
                 bold: false,
             },
         )),
         Some(StyledModule::new(
-            Module::Cpu(2),
+            Module::CpuPercentage(2),
             Some(Icon::Cpu),
             Style {
                 fg: Color::Cyan,
@@ -31,10 +31,19 @@ pub fn get_modules() -> Vec<StyledModule> {
             },
         )),
         Some(StyledModule::new(
-            Module::Memory(2),
-            Some(Icon::DoubleServer),
+            Module::MemoryUsage(crate::utils::system::memory::MemoryUsageUnit::GiB),
+            Some(Icon::Manual("RAM")),
             Style {
-                fg: Color::Yellow,
+                fg: Color::Cyan,
+                bg: Color::Reset,
+                bold: false,
+            },
+        )),
+        Some(StyledModule::new(
+            Module::SwapUsage(crate::utils::system::memory::MemoryUsageUnit::MiB),
+            Some(Icon::Manual("SWP")),
+            Style {
+                fg: Color::Red,
                 bg: Color::Reset,
                 bold: false,
             },
@@ -48,18 +57,9 @@ pub fn get_modules() -> Vec<StyledModule> {
                 bold: false,
             },
         )),
-        Some(StyledModule::new(
-            Module::SessionName,
-            Some(Icon::Tmux),
-            Style {
-                fg: Color::Blue,
-                bg: Color::Reset,
-                bold: false,
-            },
-        )),
         conditional_insert(
             StyledModule::new(
-                Module::Manual("  LOW BATTERY  "),
+                Module::Custom("  LOW BATTERY  "),
                 None,
                 Style {
                     fg: Color::Black,
@@ -69,6 +69,15 @@ pub fn get_modules() -> Vec<StyledModule> {
             ),
             battery_percentage.unwrap_or(100) < 20 && !is_charging,
         ),
+        Some(StyledModule::new(
+            Module::Time("%H:%M:%S"),
+            Some(Icon::Time),
+            Style {
+                fg: Color::Yellow,
+                bg: Color::Reset,
+                bold: false,
+            },
+        )),
     ]
     .into_iter()
     .flatten()
@@ -84,5 +93,5 @@ pub fn post_modules() -> &'static str {
 }
 
 pub fn between_modules() -> &'static str {
-    " "
+    " | "
 }
