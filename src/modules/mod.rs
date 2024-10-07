@@ -5,29 +5,40 @@ use crate::utils::system::{battery::BatteryInformation, cpu};
 use chrono::{DateTime, Local};
 use std::time::Duration;
 use sysinfo::{MemoryRefreshKind, RefreshKind, System};
+use crate::utils::strings::mem_usage;
+use crate::utils::system::memory::{get_memory_usage, get_swap_usage, MemoryUsageUnit};
 
 // Those are only constructed in config.rs
 #[allow(dead_code)]
 #[derive(Clone, Copy)]
 pub enum Module {
-    Manual(&'static str),
+    Custom(&'static str),
+
     Time(&'static str),
+
     Battery,
-    Cpu(usize),
-    Memory(usize),
-    Swap(usize),
+
+    CpuPercentage(usize),
+    MemoryPercentage(usize),
+    MemoryUsage(MemoryUsageUnit),
+    SwapPercentage(usize),
+    SwapUsage(MemoryUsageUnit),
+
+    // Host data
     Uptime,
+    Hostname,
+
+    // Tmux
     SessionName,
     WindowName,
     WindowIndex,
     PaneIndex,
-    Hostname,
 }
 
 impl Module {
     fn display(self) -> Result<String, ()> {
         match self {
-            Module::Manual(s) => Ok(String::from(s)),
+            Module::Custom(s) => Ok(String::from(s)),
             Module::Time(format) => {
                 let now: DateTime<Local> = Local::now();
 
@@ -41,8 +52,8 @@ impl Module {
             Module::WindowIndex => Ok(String::from("#I")),
             Module::PaneIndex => Ok(String::from("#P")),
             Module::Hostname => Ok(String::from("#H")),
-            Module::Cpu(rounding) => Ok(strings::round(cpu::get_total_average(), rounding)),
-            Module::Memory(rounding) => {
+            Module::CpuPercentage(rounding) => Ok(strings::round(cpu::get_total_average(), rounding)),
+            Module::MemoryPercentage(rounding) => {
                 let mut sys = System::new_with_specifics(
                     RefreshKind::new().with_memory(MemoryRefreshKind::everything()),
                 );
@@ -61,7 +72,7 @@ impl Module {
 
                 Ok(format!("{}", strings::PrettyDuration::new(uptime)))
             }
-            Module::Swap(rounding) => {
+            Module::SwapPercentage(rounding) => {
                 let mut sys = System::new_with_specifics(
                     RefreshKind::new().with_memory(MemoryRefreshKind::everything()),
                 );
@@ -74,6 +85,8 @@ impl Module {
                 let swap_usage_percent = (used_swap as f64 / total_swap as f64) * 100.0;
                 Ok(strings::round(swap_usage_percent, rounding))
             }
+            Module::MemoryUsage(unit) => Ok(mem_usage(get_memory_usage(), unit)),
+            Module::SwapUsage(unit) => Ok(mem_usage(get_swap_usage(), unit)),
         }
     }
 }

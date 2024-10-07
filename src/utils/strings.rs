@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 use std::time::Duration;
+use crate::utils::system::memory::MemoryUsageUnit;
 
 pub fn round<T, U>(num: T, decimal_places: U) -> String
 where
@@ -7,6 +8,22 @@ where
     U: Into<usize>,
 {
     format!("{:.1$}%", num, decimal_places.into())
+}
+
+pub fn mem_usage<U>(mem: (U, U), unit: MemoryUsageUnit) -> String
+where U: Into<u64>,
+{
+    let (unit, title) = match unit {
+        MemoryUsageUnit::Bytes => (1, "bytes"),
+        MemoryUsageUnit::KB => (1000, "KB"),
+        MemoryUsageUnit::KiB => (1024, "KiB"),
+        MemoryUsageUnit::MB => (1000 * 1000, "MB"),
+        MemoryUsageUnit::MiB => (1024 * 1024, "MiB"),
+        MemoryUsageUnit::GB => (1000 * 1000 * 1000, "GB"),
+        MemoryUsageUnit::GiB => (1024 * 1024 * 1024, "GiB"),
+    };
+
+    format!("{} {} / {} {}", mem.0.into() / unit, title, mem.1.into() / unit, title)
 }
 
 pub struct PrettyDuration {
