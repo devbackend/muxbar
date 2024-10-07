@@ -6,7 +6,7 @@ pub fn get_total_average() -> f32 {
         System::new_with_specifics(RefreshKind::new().with_cpu(CpuRefreshKind::everything()));
 
     thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-    s.refresh_cpu();
+    s.refresh_cpu_usage();
 
     let cpus = s.cpus();
 
